@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const body = await request.json()
     
     // If it's just a status update (from the list page)
@@ -15,7 +16,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         data.lunasDate = null
       }
       const transaction = await prisma.bon.update({
-        where: { id: params.id },
+        where: { id: id },
         data,
       })
       return NextResponse.json(transaction)
@@ -28,12 +29,12 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const updatedTransaction = await prisma.$transaction(async (tx) => {
       // 1. Delete all existing items
       await tx.bonItem.deleteMany({
-        where: { bonId: params.id }
+        where: { bonId: id }
       })
 
       // 2. Update bon and create new items
       return await tx.bon.update({
-        where: { id: params.id },
+        where: { id: id },
         data: {
           nomorBon,
           date: date ? new Date(date) : undefined,
@@ -66,10 +67,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     await prisma.bon.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
     return NextResponse.json({ success: true })
   } catch (error) {

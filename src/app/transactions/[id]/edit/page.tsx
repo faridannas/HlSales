@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { calculateCascadingDiscount, formatRupiah } from '@/lib/utils'
 import { Icons } from '@/components/icons'
@@ -9,7 +9,9 @@ type Customer = { id: string, name: string, discounts: { type: string, discount:
 type Product = { id: string, name: string, type: string, hargaModal: number, hargaJual: number }
 type CartItem = { product: Product, qty: number }
 
-export default function EditTransactionPage({ params }: { params: { id: string } }) {
+export default function EditTransactionPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params)
+  const id = resolvedParams.id
   const router = useRouter()
   const [customers, setCustomers] = useState<Customer[]>([])
   const [products, setProducts] = useState<Product[]>([])
@@ -40,7 +42,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
       setCustomers(custData)
       setProducts(prodData)
       
-      const transaction = txData.find((t: any) => t.id === params.id)
+      const transaction = txData.find((t: any) => t.id === id)
       if (transaction) {
         setNomorBon(transaction.nomorBon)
         setDate(new Date(transaction.date).toISOString().split('T')[0])
@@ -64,7 +66,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
       }
       setPageLoading(false)
     })
-  }, [params.id])
+  }, [id])
 
   useEffect(() => {
     if (selectedCustomer) {
@@ -137,7 +139,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
       })
     }
 
-    const res = await fetch(`/api/transactions/${params.id}`, {
+    const res = await fetch(`/api/transactions/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

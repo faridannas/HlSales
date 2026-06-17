@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const body = await request.json()
     const { code, name, type, hargaModal, hargaJual } = body
 
@@ -14,7 +15,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { code, name, type, hargaModal: hm, hargaJual: hj }
     })
 
@@ -24,11 +25,12 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     // Soft delete per AC-3.5
     await prisma.product.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { isDeleted: true }
     })
     return NextResponse.json({ success: true })

@@ -15,8 +15,9 @@ function validateDiscounts(discounts: { type: string, discount: string }[]) {
   return true
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const body = await request.json()
     const { name, phone, address, bonusThreshold, discounts } = body
 
@@ -25,11 +26,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 
     await prisma.customerDiscount.deleteMany({
-      where: { customerId: params.id }
+      where: { customerId: id }
     })
 
     const customer = await prisma.customer.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         name,
         phone,
@@ -46,11 +47,12 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     // Soft delete per AC-2.3
     await prisma.customer.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { isDeleted: true }
     })
     return NextResponse.json({ success: true })

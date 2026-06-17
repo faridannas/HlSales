@@ -1,11 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { formatRupiah } from '@/lib/utils'
+import { Icons } from '@/components/icons'
+import Link from 'next/link'
 
-export default function CustomerDetailPage({ params }: { params: { id: string } }) {
+export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params)
+  const id = resolvedParams.id
   const router = useRouter()
   const [customer, setCustomer] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -22,7 +25,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
 
   const fetchCustomer = async () => {
     setLoading(true)
-    const res = await fetch(`/api/customers/${params.id}/details`)
+    const res = await fetch(`/api/customers/${id}/details`)
     if (res.ok) {
       setCustomer(await res.json())
     } else {
@@ -31,7 +34,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
     setLoading(false)
   }
 
-  useEffect(() => { fetchCustomer() }, [params.id])
+  useEffect(() => { fetchCustomer() }, [id])
 
   if (loading) return <div style={{padding: '4rem', textAlign: 'center'}}>Memuat data pelanggan...</div>
   if (!customer) return <div style={{padding: '4rem', textAlign: 'center'}}>Pelanggan tidak ditemukan.</div>
