@@ -6,7 +6,7 @@ import { calculateCascadingDiscount, formatRupiah } from '@/lib/utils'
 import { Icons } from '@/components/icons'
 
 type Customer = { id: string, name: string, discounts: { type: string, discount: string }[] }
-type Product = { id: string, name: string, type: string, hargaModal: number, hargaJual: number }
+type Product = { id: string, code: string, name: string, type: string, hargaModal: number, hargaJual: number }
 type CartItem = { product: Product, qty: number }
 
 export default function EditTransactionPage({ params }: { params: Promise<{ id: string }> }) {
