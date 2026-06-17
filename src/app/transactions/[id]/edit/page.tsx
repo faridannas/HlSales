@@ -180,7 +180,7 @@ export default function EditTransactionPage({ params }: { params: Promise<{ id: 
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+      <form onSubmit={handleSubmit} className="form-grid">
         
         {/* Kolom Kiri: Input Data Bon */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
