@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(cuid())
+  username String @unique
+  password String
+}
+
+model Customer {
+  id             String             @id @default(cuid())
+  name           String             @unique
+  phone          String?
+  address        String?
+  bonusThreshold Float              @default(0)
+  isDeleted      Boolean            @default(false)
+  discounts      CustomerDiscount[]
+  bons           Bon[]
+}
+
+model CustomerDiscount {
+  id         String   @id @default(cuid())
+  customerId String
+  type       String   // "LM" or "BR"
+  discount   String   // e.g. "10,5" for 10% and then 5%
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, type])
+}
+
+model Product {
+  id         String    @id @default(cuid())
+  code       String    @unique
+  name       String
+  type       String    // "LM" or "BR"
+  hargaModal Float
+  hargaJual  Float
+  isDeleted  Boolean   @default(false)
+  bonItems   BonItem[]
+}
+
+model Bon {
+  id            String    @id @default(cuid())
+  nomorBon      String    @unique
+  date          DateTime  @default(now())
+  customerId    String
+  customer      Customer  @relation(fields: [customerId], references: [id])
+  ongkir        Float     @default(0)
+  description   String?
+  status        String    @default("Piutang") // "Piutang" or "Lunas"
+  isBonus       Boolean   @default(false) // AC-5.5
+  consumedBonus Int       @default(0)     // Tracks how many bonuses this bon claims
+  items         BonItem[]
+  lunasDate     DateTime? // To track exactly when the transaction becomes Lunas (for Cash Basis)
+}
+
+model BonItem {
+  id                 String  @id @default(cuid())
+  bonId              String
+  bon                Bon     @relation(fields: [bonId], references: [id], onDelete: Cascade)
+  productId          String
+  product            Product @relation(fields: [productId], references: [id])
+  qty                Int
+  hargaModal         Float   // Snapshot of cost at purchase
+  hargaJual          Float   // Snapshot of list price at purchase
+  diskonCascading    String  // Snapshot of discount applied (e.g., "10,5")
+  hargaSetelahDiskon Float   // Snapshot of final price after cascading discount
+}
